@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from AutoBiller.uiComponents import *
-from AutoBiller.clientLogic import *
-from AutoBiller.calendarLogic import *
-from AutoBiller.utils import *
+from uiComponents import *
+from clientLogic import *
+from calendarLogic import *
+from utils import *
+
+# TODO: change to AutoBiller.* for distribution
 
 def main():
     app = QApplication([])
