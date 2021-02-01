@@ -6,4 +6,4 @@ dist/
 AutoBiller.egg-info/
 *.pyz
 bin/
-.sh
+*.sh
