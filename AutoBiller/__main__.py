@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from uiComponents import *
-from clientLogic import *
-from calendarLogic import *
-from utils import *
+from AutoBiller.uiComponents import *
+from AutoBiller.clientLogic import *
+from AutoBiller.calendarLogic import *
+from AutoBiller.utils import *
 
-if __name__ == '__main__':
-
+def main():
     app = QApplication([])
 
     # Init the main scene
@@ -21,3 +20,6 @@ if __name__ == '__main__':
     main_scene.show()
 
     app.exec_()
+
+if __name__ == '__main__':
+    main()
