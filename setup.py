@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="AutoBiller",
-    version="0.0.3",
+    version="0.0.5",
     author="Joseph Yudelson",
     author_email="",
     description="A tool for therapists to turn an icloud calendar of sessions into formal sessions.",

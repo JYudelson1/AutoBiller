@@ -7,3 +7,4 @@ AutoBiller.egg-info/
 *.pyz
 bin/
 *.sh
+*.spec
