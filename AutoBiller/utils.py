@@ -17,7 +17,7 @@ def get_download_path():
 def download_csv_file(filename, fieldnames, list_of_rows):
     """Writes a csv file to the given filename"""
     dir_name = get_download_path()
-    path = dir_name + filename + ".csv"
+    path = dir_name + "/" + filename + ".csv"
 
     with open(path, mode='w+') as csv_file:
 

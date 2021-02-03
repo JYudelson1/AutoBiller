@@ -9,6 +9,7 @@ from time import sleep
 
 from clientLogic import *
 from calendarLogic import *
+from utils import *
 # TODO: change to AutoBiller.* for distribution
 
 class MainScene(QMainWindow):
@@ -437,6 +438,7 @@ class DisplayQueryWidget(QWidget):
         self.name = name
         self.events = events
         self.data = data
+        self.header = None
 
         self.page_num = None
         if self.parent():
@@ -467,8 +469,18 @@ class DisplayQueryWidget(QWidget):
         self.parent().parent().rename_page_in_toolbar(self.page_num, self.name)
 
     def export_as_csv(self):
-        # TODO: Implement
-        pass
+        filename = "BillingReport-" + self.name + "({})".format(datetime.today().strftime("%m.%d.%Y"))
+        fieldnames = self.header[1:]
+        checked_rows = []
+        for i in range(self.table.rowCount()):
+            checked = self.table.cellWidget(i, 0).findChildren(QCheckBox)[0].checkState()
+            if checked == Qt.Checked:
+                row_dict = {}
+                for j, field in enumerate(fieldnames):
+                    row_dict[field] = self.table.item(i, j+1).text()
+                checked_rows.append(row_dict)
+
+        download_csv_file(filename, fieldnames, checked_rows)
 
 class DisplayQueryByDayWidget(DisplayQueryWidget):
     """docstring for DisplayQueryByDayWidget."""
@@ -515,4 +527,5 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         copay.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
     def checkbox_toggled(self, i, new_state):
+        # TODO: Implement
         pass
