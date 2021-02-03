@@ -29,7 +29,12 @@ class MainScene(QMainWindow):
         self.client_directory = client_directory
         self.calendar_manager = calendar_manager
 
-        self.navigable_pages = [NewQueryWidget(parent=self)]
+        nq = NewQueryWidget(parent=self)
+        self.navigable_pages = [nq]
+
+        self.stacked_widget = QStackedWidget(self)
+        self.stacked_widget.addWidget(nq)
+
 
     def _createMenu(self):
         menubar = QMenuBar()
@@ -78,7 +83,10 @@ class MainScene(QMainWindow):
 
     def nav(self, nav_request):
         page = self.navigable_pages[nav_request]
-        self.setCentralWidget(page)
+        self.stacked_widget.setCurrentWidget(page)
+
+    def go_to_main(self):
+        self.setCentralWidget(self.stacked_widget)
 
     def rename_page_in_toolbar(self, page_num, new_name):
         action = self.toolbar.findChildren(QAction)[page_num]
@@ -96,15 +104,16 @@ class MainScene(QMainWindow):
         # Create a new DisplayQueryWidget, then add it to pages and go there
         display = DisplayQueryWidget(name=name, events=events, parent=self)
         self.add_page(display)
-        self.nav(display.page_num)
+        self.stacked_widget.setCurrentWidget(display)
 
     def add_page(self, finished_query_widget):
         # Add a new DisplayQueryWidget to the list of navigable pages
 
         index = len(self.navigable_pages)
         self.navigable_pages.append(finished_query_widget)
-        title = finished_query_widget.get_name()
+        self.stacked_widget.addWidget(finished_query_widget)
 
+        title = finished_query_widget.get_name()
         self.toolbar.addAction(title, lambda: self.nav(index))
 
 
@@ -219,7 +228,7 @@ class LoginWidget(QWidget):
 
     def finished(self):
         self.loader.stop_loading()
-        self.parent().nav(0)
+        self.parent().go_to_main()
 
     def start_confirmation_popup(self):
         icloud = self.parent().icloud

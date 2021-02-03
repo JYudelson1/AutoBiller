@@ -20,7 +20,6 @@ def main():
     login_widget = LoginWidget(parent=main_scene)
     main_scene.setCentralWidget(login_widget)
     main_scene.show()
-    print(main_scene.centralWidget())
 
     app.exec_()
 
