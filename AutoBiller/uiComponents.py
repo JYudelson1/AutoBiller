@@ -105,6 +105,7 @@ class MainScene(QMainWindow):
         display = DisplayQueryWidget(name=name, events=events, parent=self)
         self.add_page(display)
         self.stacked_widget.setCurrentWidget(display)
+        return display
 
     def add_page(self, finished_query_widget):
         # Add a new DisplayQueryWidget to the list of navigable pages
@@ -429,9 +430,16 @@ class DisplayQueryWidget(QWidget):
         if self.parent():
             self.page_num = len(self.parent().navigable_pages)
 
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.title = QLabel("<h2>Bill: {}</h2>".format(self.name))
+        layout.addWidget(self.title, alignment=Qt.AlignCenter)
+
     def get_name(self):
         return self.name
 
     def rename(self, new_name):
         self.name = new_name
+        self.title.setText("<h2>Bill: {}</h2>".format(self.name))
         self.parent().rename_page_in_toolbar(self.page_num, self.name)
