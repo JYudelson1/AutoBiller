@@ -80,15 +80,6 @@ class MainScene(QMainWindow):
         page = self.navigable_pages[nav_request]
         self.setCentralWidget(page)
 
-    def add_page(self, finished_query_widget):
-        # Add a new FinishedQueryWidget to the list of navigable pages
-
-        index = len(self.navigable_pages)
-        self.navigable_pages.append(finished_query_widget)
-        title = finished_query_widget.get_name()
-
-        self.toolbar.addAction(title, lambda: self.nav(index))
-
     def rename_page_in_toolbar(self, page_num, new_name):
         action = self.toolbar.findChildren(QAction)[page_num]
         action.setText(new_name)
@@ -100,6 +91,22 @@ class MainScene(QMainWindow):
         # TODO: Make new DisplayQueryByDayWindow here
         # Then add it to the toolbar
         # Then nav to it
+
+    def new_display_query_widget(self, name, events):
+        # Create a new DisplayQueryWidget, then add it to pages and go there
+        display = DisplayQueryWidget(name=name, events=events, parent=self)
+        self.add_page(display)
+        self.nav(display.page_num)
+
+    def add_page(self, finished_query_widget):
+        # Add a new DisplayQueryWidget to the list of navigable pages
+
+        index = len(self.navigable_pages)
+        self.navigable_pages.append(finished_query_widget)
+        title = finished_query_widget.get_name()
+
+        self.toolbar.addAction(title, lambda: self.nav(index))
+
 
 class LoginConfirmationPopup(QDialog):
     """docstring for LoginConfirmationPopup."""
@@ -399,3 +406,23 @@ class ThreadedTask(QObject):
 
     def start(self):
         self.thread.start()
+
+class DisplayQueryWidget(QWidget):
+    """docstring for DisplayQueryWindow."""
+
+    def __init__(self, name=None, events=None, data=None, parent=None):
+        super().__init__(parent)
+        self.name = name
+        self.events = events
+        self.data = data
+
+        self.page_num = None
+        if self.parent():
+            self.page_num = len(self.parent().navigable_pages)
+
+    def get_name(self):
+        return self.name
+
+    def rename(self, new_name):
+        self.name = new_name
+        self.parent().rename_page_in_toolbar(self.page_num, self.name)
