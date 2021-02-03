@@ -89,7 +89,7 @@ class MainScene(QMainWindow):
         self.setCentralWidget(self.stacked_widget)
 
     def rename_page_in_toolbar(self, page_num, new_name):
-        action = self.toolbar.findChildren(QAction)[page_num]
+        action = self.toolbar.findChildren(QAction)[page_num+2]
         action.setText(new_name)
 
     def new_bill_by_day(self, date):
@@ -434,7 +434,7 @@ class DisplayQueryWidget(QWidget):
         self.setLayout(self.layout)
 
         self.title = QLabel("<h2>Bill: {}</h2>".format(self.name))
-        layout.addWidget(self.title, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.title, alignment=Qt.AlignCenter)
 
     def get_name(self):
         return self.name
@@ -442,4 +442,4 @@ class DisplayQueryWidget(QWidget):
     def rename(self, new_name):
         self.name = new_name
         self.title.setText("<h2>Bill: {}</h2>".format(self.name))
-        self.parent().rename_page_in_toolbar(self.page_num, self.name)
+        self.parent().parent().rename_page_in_toolbar(self.page_num, self.name)

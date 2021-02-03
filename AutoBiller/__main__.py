@@ -21,13 +21,6 @@ def main():
     main_scene.setCentralWidget(login_widget)
     main_scene.show()
 
-    main_scene.go_to_main()
-    main_scene.toolbar.show()
-    d = main_scene.new_display_query_widget("TEST", [])
-    sleep(2)
-    d.rename("second test")
-
-
     app.exec_()
 
 if __name__ == '__main__':
