@@ -21,9 +21,10 @@ def main():
     main_scene.setCentralWidget(login_widget)
     main_scene.show()
 
-    main_scene.go_to_main()
-    main_scene.toolbar.show()
-    d = main_scene.new_display_query_by_day_widget("TEST", [1,2,3,4,5,6,1,2,3])
+    # main_scene.go_to_main()
+    # main_scene.toolbar.show()
+    # a = CalendarEvent({"title":"test", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
+    # d = main_scene.new_display_query_by_day_widget("TEST", [a])
 
     app.exec_()
 

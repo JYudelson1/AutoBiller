@@ -95,10 +95,7 @@ class MainScene(QMainWindow):
     def new_bill_by_day(self, date):
         assert type(date) == datetime
 
-        events_of_day = self.calendar_manager.add_one_day(date)
-        # TODO: Make new DisplayQueryByDayWindow here
-        # Then add it to the toolbar
-        # Then nav to it
+        return self.calendar_manager.add_one_day(date)
 
     def new_display_query_by_day_widget(self, name, events):
         # Create a new DisplayQueryByDayWidget, then add it to pages and go there
@@ -277,7 +274,7 @@ class NewQueryWidget(QWidget):
 
     def bill_by_day(self, date):
         assert type(date) == datetime
-        self.parent().new_bill_by_day(date)
+        return self.parent().parent().new_bill_by_day(date)
 
     def init_bill_by_client(self):
         pass
@@ -348,22 +345,31 @@ class DayQueryPopup(QDialog):
     def confirm_date(self):
         # Handle the login in a worker QThread
         date = self.date_picker.date()
-        date = datetime(date.year(), date.month(), date.day())
+        self.date = datetime(date.year(), date.month(), date.day())
 
         target_fn = self.bill_by_day_target_fn
-        args = (date,)
+        args = (self.date,)
         on_close_fn = self.finished
 
+
         self.login_thread = ThreadedTask(target_fn, args, on_close_fn)
+        self.login_thread.update.connect(self.gui_fn)
         self.login_thread.start()
 
     def bill_by_day_target_fn(self, date):
         # Tell the NewQueryWindow to bill one day
-        self.parent().bill_by_day(date)
+        self.events_of_day = self.parent().bill_by_day(date)
+        return True
 
     def finished(self):
         self.loader.stop_loading()
         self.close()
+
+    def set_events(self, events_of_day):
+        self.events_of_day = events_of_day
+
+    def gui_fn(self):
+        self.parent().parent().parent().new_display_query_by_day_widget(self.date.strftime("%m/%d/%Y"), self.events_of_day)
 
 class HiddenLoaderStackedWidget(QStackedWidget):
     """docstring for HiddenLoaderStackedWidget."""
@@ -446,7 +452,6 @@ class DisplayQueryWidget(QWidget):
         self.table.setRowCount(len(events))
         self.table.setSizeAdjustPolicy(
             QAbstractScrollArea.AdjustToContents)
-        self.table.setSelectionMode(QAbstractItemView.NoSelection)
         self.layout.addWidget(self.table, alignment=Qt.AlignCenter)
 
         export_as_csv_btn = QPushButton("Export as .csv")
@@ -470,8 +475,44 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
 
     def __init__(self, name=None, events=None, data=None, parent=None):
         super().__init__(name, events, data, parent)
-        self.header = ["Test", "a","b","d"]
-        # TODO: Real headers
+        self.header = ["Billable?","Event","CPT","Insurance","Copay"]
         self.table.setColumnCount(len(self.header))
         self.table.setHorizontalHeaderLabels(self.header)
+
+        for i, event in enumerate(self.events):
+            self.add_to_table(i, event)
+
         self.table.resizeColumnsToContents()
+
+    def add_to_table(self, i, event):
+        # Add the given event to row i
+        checkbox_item = QWidget()
+        checkbox = QCheckBox()
+        c_layout = QHBoxLayout(checkbox_item)
+        c_layout.addWidget(checkbox, alignment=Qt.AlignCenter)
+        checkbox_item.setLayout(c_layout)
+        self.table.setCellWidget(i, 0, checkbox_item)
+        checkbox.stateChanged.connect(lambda state: self.checkbox_toggled(state, i))
+
+        title = QTableWidgetItem(event.title)
+        title.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(i, 1, title)
+        title.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+
+        cpt = QTableWidgetItem("---")
+        cpt.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(i, 2, cpt)
+        cpt.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+
+        insurance = QTableWidgetItem("---")
+        insurance.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(i, 3, insurance)
+        insurance.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+
+        copay = QTableWidgetItem("---")
+        copay.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(i, 4, copay)
+        copay.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+
+    def checkbox_toggled(self, i, new_state):
+        pass
