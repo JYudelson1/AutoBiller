@@ -31,6 +31,23 @@ class DateRange(object):
             return None
         return self.events[-1]
 
+    def contains(self, day):
+        # Is the specified day within this date range?
+        assert type(day) == datetime
+        if (day >= self.start and day <= self.end):
+            return True
+        return False
+
+    def all_events_within(self, sub_dr):
+        # returns a sorted list of all events within both self and sub_dr
+        assert type(sub_dr) == DateRange
+        events_within_timeframe = []
+        for event in self.events:
+            if sub_dr.contains(event):
+                events_within_timeframe.append(event)
+        events_within_timeframe.sort(key=lambda e: e.date)
+        return events_within_timeframe
+
     def __repr__(self):
         return "({}, {})".format(self.start.strftime("%m/%d/%Y"), self.end.strftime("%m/%d/%Y"))
 
@@ -56,7 +73,9 @@ class CalendarManager(object):
     def add_one_day(self, date):
         # Pre-download TIME_DELTA days in advance
         date_and_extra = DateRange(date, date + timedelta(days=self.TIME_DELTA))
-        return self.add_date_range(date_and_extra)
+        events = self.add_date_range(date_and_extra)
+        events_of_day = [e for e in events if e.day == date]
+        return events_of_day
 
     def add_date_range(self, date_range):
         """A function that will perform the actions needed
@@ -122,7 +141,7 @@ class CalendarManager(object):
         if len(self.date_ranges) == 0 or not added_anything:
             self.date_ranges.append(date_range)
             self.download_to_dr(date_range, date_range)
-            return date_range
+            return date_range.get_events()
 
         # Download the extra bit between the end of the last old dr and date_range
         if dr_focus_date != dr_focus.end:
@@ -136,7 +155,7 @@ class CalendarManager(object):
             self.date_ranges.remove(dr)
             del dr
 
-        return dr_focus
+        return dr_focus.all_events_within(date_range)
 
     def merge_dr(self, dr_delete, dr_merge):
         # merge the data from dr_delete to dr_merge
@@ -176,9 +195,10 @@ class CalendarEvent(object):
         self.title = calendar_dict.get("title")
 
         self.date = calendar_dict["localStartDate"]
-        self.date = datetime(self.date[1], self.date[2], self.date[3])
+        self.day = datetime(self.date[1], self.date[2], self.date[3])
+        self.date = datetime(self.date[1], self.date[2], self.date[3], self.date[4], self.date[5])
 
         self.duration_in_min = int(calendar_dict["duration"])
 
     def readable_date(self):
-        return self.date.strftime("%m/%d/%Y")
+        return self.date.strftime("%I:%M %p, %m/%d/%Y")
