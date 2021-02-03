@@ -100,9 +100,16 @@ class MainScene(QMainWindow):
         # Then add it to the toolbar
         # Then nav to it
 
-    def new_display_query_widget(self, name, events):
-        # Create a new DisplayQueryWidget, then add it to pages and go there
-        display = DisplayQueryWidget(name=name, events=events, parent=self)
+    def new_display_query_by_day_widget(self, name, events):
+        # Create a new DisplayQueryByDayWidget, then add it to pages and go there
+        display = DisplayQueryByDayWidget(name=name, events=events, parent=self)
+        self.add_page(display)
+        self.stacked_widget.setCurrentWidget(display)
+        return display
+
+    def new_display_query_by_client_widget(self, name, events):
+        # Create a new DisplayQueryByClientWidget, then add it to pages and go there
+        display = DisplayQueryByClientWidget(name=name, events=events, parent=self)
         self.add_page(display)
         self.stacked_widget.setCurrentWidget(display)
         return display
@@ -116,7 +123,6 @@ class MainScene(QMainWindow):
 
         title = finished_query_widget.get_name()
         self.toolbar.addAction(title, lambda: self.nav(index))
-
 
 class LoginConfirmationPopup(QDialog):
     """docstring for LoginConfirmationPopup."""
@@ -436,6 +442,17 @@ class DisplayQueryWidget(QWidget):
         self.title = QLabel("<h2>Bill: {}</h2>".format(self.name))
         self.layout.addWidget(self.title, alignment=Qt.AlignCenter)
 
+        self.table = QTableWidget()
+        self.table.setRowCount(len(events))
+        self.table.setSizeAdjustPolicy(
+            QAbstractScrollArea.AdjustToContents)
+        self.table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.layout.addWidget(self.table, alignment=Qt.AlignCenter)
+
+        export_as_csv_btn = QPushButton("Export as .csv")
+        export_as_csv_btn.clicked.connect(self.export_as_csv)
+        self.layout.addWidget(export_as_csv_btn, alignment=Qt.AlignCenter)
+
     def get_name(self):
         return self.name
 
@@ -443,3 +460,18 @@ class DisplayQueryWidget(QWidget):
         self.name = new_name
         self.title.setText("<h2>Bill: {}</h2>".format(self.name))
         self.parent().parent().rename_page_in_toolbar(self.page_num, self.name)
+
+    def export_as_csv(self):
+        # TODO: Implement
+        pass
+
+class DisplayQueryByDayWidget(DisplayQueryWidget):
+    """docstring for DisplayQueryByDayWidget."""
+
+    def __init__(self, name=None, events=None, data=None, parent=None):
+        super().__init__(name, events, data, parent)
+        self.header = ["Test", "a","b","d"]
+        # TODO: Real headers
+        self.table.setColumnCount(len(self.header))
+        self.table.setHorizontalHeaderLabels(self.header)
+        self.table.resizeColumnsToContents()

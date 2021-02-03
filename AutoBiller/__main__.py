@@ -21,6 +21,10 @@ def main():
     main_scene.setCentralWidget(login_widget)
     main_scene.show()
 
+    main_scene.go_to_main()
+    main_scene.toolbar.show()
+    d = main_scene.new_display_query_by_day_widget("TEST", [1,2,3,4,5,6,1,2,3])
+
     app.exec_()
 
 if __name__ == '__main__':
