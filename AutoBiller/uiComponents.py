@@ -171,6 +171,8 @@ class LoginConfirmationPopup(QDialog):
             print("Failed to verify verification code")
         self.close()
 
+# TODO: there's some bug with the 2fa. Fix!!
+
 class LoginWidget(QWidget):
     """docstring for LoginWidget."""
 
@@ -481,6 +483,8 @@ class DisplayQueryWidget(QWidget):
                 checked_rows.append(row_dict)
 
         download_csv_file(filename, fieldnames, checked_rows)
+
+# TODO: make this more satisfying
 
 class DisplayQueryByDayWidget(DisplayQueryWidget):
     """docstring for DisplayQueryByDayWidget."""
