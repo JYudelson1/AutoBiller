@@ -469,7 +469,7 @@ class DisplayQueryWidget(QWidget):
         self.parent().parent().rename_page_in_toolbar(self.page_num, self.name)
 
     def export_as_csv(self):
-        filename = "BillingReport-" + self.name + "({})".format(datetime.today().strftime("%m.%d.%Y"))
+        filename = "BillingReport: " + self.name.replace("/","-") + "({})".format(datetime.today().strftime("%m.%d.%Y"))
         fieldnames = self.header[1:]
         checked_rows = []
         for i in range(self.table.rowCount()):
@@ -487,7 +487,7 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
 
     def __init__(self, name=None, events=None, data=None, parent=None):
         super().__init__(name, events, data, parent)
-        self.header = ["Billable?","Event","CPT","Insurance","Copay"]
+        self.header = ["Billable?","Event","CPT","Insurance","Payment","Billing Fee"]
         self.table.setColumnCount(len(self.header))
         self.table.setHorizontalHeaderLabels(self.header)
 
@@ -525,6 +525,11 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         copay.setTextAlignment(Qt.AlignCenter)
         self.table.setItem(i, 4, copay)
         copay.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+
+        fee = QTableWidgetItem("---")
+        fee.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(i, 5, fee)
+        fee.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
     def checkbox_toggled(self, i, new_state):
         # TODO: Implement

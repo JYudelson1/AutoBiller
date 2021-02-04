@@ -33,7 +33,9 @@ fee_by_cpt_code = {
     "90832": 200, #30 min
     "90834": 280, #45 min
     "90837": 350, #1 hr
-    "90853": 180, #Group
+    "90853": 225, #Group
     "90847": 400, #Couples
-    "90839": 550  #Crisis
+    "90839": 500  #Crisis
 }
+
+# TODO: Add way to raise fees—maybe store in separate resource file?
