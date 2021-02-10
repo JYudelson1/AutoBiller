@@ -169,9 +169,8 @@ class LoginConfirmationPopup(QDialog):
     def verify_code(self, device, code):
         if not self.icloud_acct.validate_verification_code(device, code):
             print("Failed to verify verification code")
+            # TODO: Make this more of a problem
         self.close()
-
-# TODO: there's some bug with the 2fa. Fix!!
 
 class LoginWidget(QWidget):
     """docstring for LoginWidget."""
@@ -481,10 +480,8 @@ class DisplayQueryWidget(QWidget):
                 for j, field in enumerate(fieldnames):
                     row_dict[field] = self.table.item(i, j+1).text()
                 checked_rows.append(row_dict)
-
+        # TODO: make this more satisfying
         download_csv_file(filename, fieldnames, checked_rows)
-
-# TODO: make this more satisfying
 
 class DisplayQueryByDayWidget(DisplayQueryWidget):
     """docstring for DisplayQueryByDayWidget."""

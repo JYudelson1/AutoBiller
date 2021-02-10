@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import csv, os
+import csv, os, json
 
 def get_download_path():
     """Returns the default downloads path for linux or windows"""
@@ -27,15 +27,18 @@ def download_csv_file(filename, fieldnames, list_of_rows):
         for row in list_of_rows:
             writer.writerow(row)
 
-fee_by_cpt_code = {
-    "90791": 550, #Initial Session
-    "96152": 120, #15 min
-    "90832": 200, #30 min
-    "90834": 280, #45 min
-    "90837": 350, #1 hr
-    "90853": 225, #Group
-    "90847": 400, #Couples
-    "90839": 500  #Crisis
-}
+# fee_by_cpt_code = {
+#     "90791": 550, #Initial Session
+#     "96152": 120, #15 min
+#     "90832": 200, #30 min
+#     "90834": 280, #45 min
+#     "90837": 350, #1 hr
+#     "90853": 225, #Group
+#     "90847": 400, #Couples
+#     "90839": 500  #Crisis
+# }
+
+with open("resources/fees.json", "r") as f:
+    fee_by_cpt_code = json.load(f)
 
 # TODO: Add way to raise fees—maybe store in separate resource file?
