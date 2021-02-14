@@ -41,4 +41,6 @@ def download_csv_file(filename, fieldnames, list_of_rows):
 with open("resources/fees.json", "r") as f:
     fee_by_cpt_code = json.load(f)
 
-# TODO: Add way to raise fees—maybe store in separate resource file?
+def write_fees(new_fees):
+    with open("resources/fees.json", "w+") as f:
+        json.dump(new_fees, f)

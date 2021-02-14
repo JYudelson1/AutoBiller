@@ -42,6 +42,9 @@ class MainScene(QMainWindow):
         self.menubar = menubar
         self.setMenuBar(menubar)
 
+        new_actions = menubar.addMenu("Settings")
+        new_actions.addAction("Change Fees", self.change_fees)
+
         new_actions = menubar.addMenu("New")
         new_actions.addAction("New Query", lambda: self.nav(0))
 
@@ -121,6 +124,79 @@ class MainScene(QMainWindow):
 
         title = finished_query_widget.get_name()
         self.toolbar.addAction(title, lambda: self.nav(index))
+
+    def change_fees(self):
+        # Open a popup to change the saved fees.json file
+        fee_popup = ChangeFeesPopup(self)
+        fee_popup.exec_()
+
+class ChangeFeesPopup(QDialog):
+    """docstring for ChangeFeesPopup."""
+
+    types_in_order = ["90791", "96152", "90832", "90834", "90837", "90853", "90847", "90839"]
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        fees = QFormLayout()
+        self.form = fees
+        fees.addRow("First Session (90791):", QLineEdit())
+        fees.addRow("15min Session (96152):", QLineEdit())
+        fees.addRow("30min Session (90832):", QLineEdit())
+        fees.addRow("45min Session (90834):", QLineEdit())
+        fees.addRow("1hr Session (90837):", QLineEdit())
+        fees.addRow("Group Session (90853):", QLineEdit())
+        fees.addRow("Couples Session (90847):", QLineEdit())
+        fees.addRow("Crisis (90839):", QLineEdit())
+        # Make sure that each field has its placeholder fee
+        for i in range(8):
+            field = fees.itemAt(2*i + 1).widget()
+            type = ChangeFeesPopup.types_in_order[i]
+            field.setPlaceholderText(str(fee_by_cpt_code[type]))
+
+        layout.addLayout(fees)
+
+        buttons = QDialogButtonBox()
+        buttons.setStandardButtons(
+            QDialogButtonBox.Close | QDialogButtonBox.Save)
+        buttons.accepted.connect(self.save_fees)
+        buttons.rejected.connect(self.close)
+        layout.addWidget(buttons, alignment=Qt.AlignCenter)
+
+    def save_fees(self):
+        new_fees = self.get_fees_from_form()
+
+        if new_fees:
+            # Update the fees in all relevant places
+            write_fees(new_fees)
+            for k in fee_by_cpt_code.keys():
+                fee_by_cpt_code[k] = new_fees[k]
+
+            confirm = QMessageBox.information(self,
+                                    'Fee Change',
+                                    "Your fees have been updated!")
+
+            self.close()
+
+    def get_fees_from_form(self):
+        new_fees = {}
+        for i, type in enumerate(ChangeFeesPopup.types_in_order):
+            field = self.form.itemAt(2*i + 1).widget()
+            if field.text():
+                try:
+                    new_fees[type] = int(field.text())
+                except ValueError:
+                    warning = QMessageBox.warning(self,
+                                            'Invalid Fee',
+                                            "At least one of your fees is not a number!")
+                    return False
+            else:
+                new_fees[type] = fee_by_cpt_code[type]
+
+        return new_fees
 
 class LoginConfirmationPopup(QDialog):
     """docstring for LoginConfirmationPopup."""
