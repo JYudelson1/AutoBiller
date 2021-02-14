@@ -10,6 +10,11 @@ from utils import *
 def main():
     app = QApplication([])
 
+    pal = QPalette()
+    pal.setColor(QPalette.Window, QColor("#FCF8E9"))
+    pal.setColor(QPalette.Button, QColor("#FFFBF3"))
+    app.setPalette(pal)
+
     # Init the main scene
     calendar_manager = CalendarManager()
     client_directory = ClientDirectory()

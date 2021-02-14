@@ -2,7 +2,7 @@
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QDateTime, QSize, QObject, QThread, pyqtSignal
-from PyQt5.QtGui import QIcon, QMovie
+from PyQt5.QtGui import QIcon, QMovie, QPixmap, QPalette, QColor
 
 from pyicloud import PyiCloudService
 from time import sleep
@@ -81,13 +81,15 @@ class MainScene(QMainWindow):
             event.ignore()
 
     def _createStatusBar(self):
-        status = QStatusBar()
-        status.showMessage("Developed by Joseph Yudelson")
-        self.setStatusBar(status)
+        self.status = QStatusBar()
+        self.status.showMessage("Developed by Joseph Yudelson")
+        self.setStatusBar(self.status)
 
     def nav(self, nav_request):
         page = self.navigable_pages[nav_request]
         self.stacked_widget.setCurrentWidget(page)
+        # Return Status Bar to default
+        self.status.showMessage("Developed by Joseph Yudelson")
 
     def go_to_main(self):
         self.setCentralWidget(self.stacked_widget)
@@ -182,6 +184,7 @@ class ChangeFeesPopup(QDialog):
             self.close()
 
     def get_fees_from_form(self):
+        # Extract new fee data from the form
         new_fees = {}
         for i, type in enumerate(ChangeFeesPopup.types_in_order):
             field = self.form.itemAt(2*i + 1).widget()
@@ -189,6 +192,7 @@ class ChangeFeesPopup(QDialog):
                 try:
                     new_fees[type] = int(field.text())
                 except ValueError:
+                    # If a value is not an int:
                     warning = QMessageBox.warning(self,
                                             'Invalid Fee',
                                             "At least one of your fees is not a number!")
@@ -533,9 +537,9 @@ class DisplayQueryWidget(QWidget):
             QAbstractScrollArea.AdjustToContents)
         self.layout.addWidget(self.table, alignment=Qt.AlignCenter)
 
-        export_as_csv_btn = QPushButton("Export as .csv")
-        export_as_csv_btn.clicked.connect(self.export_as_csv)
-        self.layout.addWidget(export_as_csv_btn, alignment=Qt.AlignCenter)
+        self.export_as_csv_btn = QPushButton("Export as .csv")
+        self.export_as_csv_btn.clicked.connect(self.export_as_csv)
+        self.layout.addWidget(self.export_as_csv_btn, alignment=Qt.AlignCenter)
 
     def get_name(self):
         return self.name
@@ -556,7 +560,7 @@ class DisplayQueryWidget(QWidget):
                 for j, field in enumerate(fieldnames):
                     row_dict[field] = self.table.item(i, j+1).text()
                 checked_rows.append(row_dict)
-        # TODO: make this more satisfying
+        self.parent().parent().status.showMessage("File Saved to Downloads!")
         download_csv_file(filename, fieldnames, checked_rows)
 
 class DisplayQueryByDayWidget(DisplayQueryWidget):

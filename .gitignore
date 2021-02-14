@@ -8,3 +8,4 @@ AutoBiller.egg-info/
 bin/
 *.sh
 *.spec
+todo.md
