@@ -248,8 +248,10 @@ class LoginConfirmationPopup(QDialog):
 
     def verify_code(self, device, code):
         if not self.icloud_acct.validate_verification_code(device, code):
-            print("Failed to verify verification code")
-            # TODO: Make this more of a problem
+            #print("Failed to verify verification code")
+            warning = QMessageBox.warning(self,
+                                    'Invalid Code',
+                                    "The verification code you entered was not valid! Try logging in again!")
         self.close()
 
 class LoginWidget(QWidget):
