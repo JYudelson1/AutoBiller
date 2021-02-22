@@ -8,12 +8,13 @@ from utils import *
 # TODO: change to AutoBiller.* for distribution
 
 def main():
-    app = QApplication([])
+    autobiller = QApplication([])
 
-    pal = QPalette()
-    pal.setColor(QPalette.Window, QColor("#FCF8E9"))
-    pal.setColor(QPalette.Button, QColor("#FFFBF3"))
-    app.setPalette(pal)
+    # Give the app a color palette
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor("#FCF8E9"))
+    palette.setColor(QPalette.Button, QColor("#FFFBF3"))
+    autobiller.setPalette(palette)
 
     # Init the main scene
     calendar_manager = CalendarManager()
@@ -32,7 +33,7 @@ def main():
     # b = CalendarEvent({"title":"test2", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
     # d = main_scene.new_display_query_by_day_widget("TEST", [a,b])
 
-    app.exec_()
+    autobiller.exec_()
 
 if __name__ == '__main__':
     main()

@@ -13,7 +13,7 @@ from utils import *
 # TODO: change to AutoBiller.* for distribution
 
 class MainScene(QMainWindow):
-    """docstring for MainScene."""
+    """The main scene of the AutoBiller app"""
 
     def __init__(self, client_directory, calendar_manager, parent=None):
         super().__init__(parent)
@@ -33,6 +33,7 @@ class MainScene(QMainWindow):
         nq = NewQueryWidget(parent=self)
         self.navigable_pages = [nq]
 
+        # Init the QStackedWidget that will hold the various scenes (except for login)
         self.stacked_widget = QStackedWidget(self)
         self.stacked_widget.addWidget(nq)
 
@@ -69,7 +70,7 @@ class MainScene(QMainWindow):
         tools.hide()
 
     def closeEvent(self, event):
-        # Confirm the user wishes to exit the AutoBiller
+        """Confirm the user wishes to exit the AutoBiller"""
         reply = QMessageBox.question(self,
                                     'Confirm Exit',
                                     "Are you sure to quit? You may have unsaved work.",
@@ -86,12 +87,14 @@ class MainScene(QMainWindow):
         self.setStatusBar(self.status)
 
     def nav(self, nav_request):
+        """Navigate to a given page attached to the main scene"""
         page = self.navigable_pages[nav_request]
         self.stacked_widget.setCurrentWidget(page)
         # Return Status Bar to default
         self.status.showMessage("Developed by Joseph Yudelson")
 
     def go_to_main(self):
+        """Sets the QStackedWidget as the central widget"""
         self.setCentralWidget(self.stacked_widget)
 
     def rename_page_in_toolbar(self, page_num, new_name):
@@ -99,26 +102,27 @@ class MainScene(QMainWindow):
         action.setText(new_name)
 
     def new_bill_by_day(self, date):
+        """Asks the attached calendar manager to bill one day"""
         assert type(date) == datetime
 
         return self.calendar_manager.add_one_day(date)
 
     def new_display_query_by_day_widget(self, name, events):
-        # Create a new DisplayQueryByDayWidget, then add it to pages and go there
+        """Create a new DisplayQueryByDayWidget, then add it to pages and go there"""
         display = DisplayQueryByDayWidget(name=name, events=events, parent=self)
         self.add_page(display)
         self.stacked_widget.setCurrentWidget(display)
         return display
 
     def new_display_query_by_client_widget(self, name, events):
-        # Create a new DisplayQueryByClientWidget, then add it to pages and go there
+        """Create a new DisplayQueryByClientWidget, then add it to pages and go there"""
         display = DisplayQueryByClientWidget(name=name, events=events, parent=self)
         self.add_page(display)
         self.stacked_widget.setCurrentWidget(display)
         return display
 
     def add_page(self, finished_query_widget):
-        # Add a new DisplayQueryWidget to the list of navigable pages
+        """Add a new DisplayQueryWidget to the list of navigable pages"""
 
         index = len(self.navigable_pages)
         self.navigable_pages.append(finished_query_widget)
@@ -128,20 +132,20 @@ class MainScene(QMainWindow):
         self.toolbar.addAction(title, lambda: self.nav(index))
 
     def change_fees(self):
-        # Open a popup to change the saved fees.json file
+        """Open a popup to change the saved fees.json file"""
         fee_popup = ChangeFeesPopup(self)
         fee_popup.exec_()
 
 class ChangeFeesPopup(QDialog):
-    """docstring for ChangeFeesPopup."""
+    """The popup used to change stored fees"""
 
     types_in_order = ["90791", "96152", "90832", "90834", "90837", "90853", "90847", "90839"]
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Set up layout
         layout = QVBoxLayout()
-        self.setLayout(layout)
 
         fees = QFormLayout()
         self.form = fees
@@ -153,7 +157,8 @@ class ChangeFeesPopup(QDialog):
         fees.addRow("Group Session (90853):", QLineEdit())
         fees.addRow("Couples Session (90847):", QLineEdit())
         fees.addRow("Crisis (90839):", QLineEdit())
-        # Make sure that each field has its placeholder fee
+
+        # Add placeholder fees for each field
         for i in range(8):
             field = fees.itemAt(2*i + 1).widget()
             type = ChangeFeesPopup.types_in_order[i]
@@ -168,7 +173,12 @@ class ChangeFeesPopup(QDialog):
         buttons.rejected.connect(self.close)
         layout.addWidget(buttons, alignment=Qt.AlignCenter)
 
+        self.setLayout(layout)
+        # Layout finished
+
     def save_fees(self):
+        """Save and store the updated fees"""
+
         new_fees = self.get_fees_from_form()
 
         if new_fees:
@@ -184,7 +194,7 @@ class ChangeFeesPopup(QDialog):
             self.close()
 
     def get_fees_from_form(self):
-        # Extract new fee data from the form
+        """Extract new fee data from the form"""
         new_fees = {}
         for i, type in enumerate(ChangeFeesPopup.types_in_order):
             field = self.form.itemAt(2*i + 1).widget()
@@ -203,12 +213,13 @@ class ChangeFeesPopup(QDialog):
         return new_fees
 
 class LoginConfirmationPopup(QDialog):
-    """docstring for LoginConfirmationPopup."""
+    """The popup used to confirm login information for 2-factor authentification"""
 
     def __init__(self, icloud_acct, parent=None):
         super().__init__(parent)
         self.icloud_acct = icloud_acct
 
+        # Set up layout
         confirmation_layout = QVBoxLayout()
 
         label1 = QLabel("<p>Login requires two-factor authentification. Please select a device to receive your confirmation code.</p>")
@@ -226,11 +237,15 @@ class LoginConfirmationPopup(QDialog):
         confirmation_layout.addWidget(code_button, alignment=Qt.AlignCenter)
 
         self.setLayout(confirmation_layout)
+        # Layout finished
 
 
     def send_code(self, device):
+        """Send verification code to trusted device for 2FA"""
         if not self.icloud_acct.send_verification_code(device):
-            print("Failed to send verification code")
+            warning = QMessageBox.warning(self,
+                                    'Failed to send code',
+                                    "Failed to send verification code. Please try again.")
             self.close()
 
         form = QFormLayout()
@@ -247,19 +262,20 @@ class LoginConfirmationPopup(QDialog):
 
 
     def verify_code(self, device, code):
+        """Verify confirmation code for 2FA"""
         if not self.icloud_acct.validate_verification_code(device, code):
-
             warning = QMessageBox.warning(self,
                                     'Invalid Code',
                                     "The verification code you entered was not valid! Try logging in again!")
         self.close()
 
 class LoginWidget(QWidget):
-    """docstring for LoginWidget."""
+    """The opening scene, for logging in to iCloud."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Set up layout
         v_layout = QVBoxLayout()
 
         label1 = QLabel("<h1>Welcome!</h1>")
@@ -294,8 +310,10 @@ class LoginWidget(QWidget):
         v_layout.addWidget(hidden_loader_with_login_button, alignment=Qt.AlignCenter)
 
         self.setLayout(v_layout)
+        # Layout finished
 
     def login(self, username, password):
+        """Log the user into their iCloud account."""
 
         #Handle the login in a worker QThread
         target_fn = self.login_target_fn
@@ -303,11 +321,14 @@ class LoginWidget(QWidget):
         on_close_fn = self.finished
         gui_fn = self.start_confirmation_popup
 
-        self.login_thread = ThreadedTask(target_fn, args, on_close_fn)
-        self.login_thread.update.connect(gui_fn)
+        self.login_thread = ThreadedTask(target_fn, args, on_close_fn, gui_fn)
         self.login_thread.start()
 
     def login_target_fn(self, username, password):
+        """
+        Attempts to log in to the icloud acct matching the username and password.
+        Returns True if the acct requires 2FA, False otherwise.
+        """
         me = PyiCloudService(username, password)
         self.parent().icloud = me
         if me.requires_2fa:
@@ -315,22 +336,24 @@ class LoginWidget(QWidget):
         return False
 
     def finished(self):
+        """When finished, navigate away from login scene."""
         self.loader.stop_loading()
         self.parent().go_to_main()
 
     def start_confirmation_popup(self):
+        """Open a LoginConfirmationPopup for 2FA"""
         icloud = self.parent().icloud
         confirmation_dialog = LoginConfirmationPopup(icloud_acct=icloud)
         confirmation_dialog.exec_()
 
 class NewQueryWidget(QWidget):
-    """docstring for NewQueryWidget."""
+    """The scene where a user decides whether to bill by client or by day."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Set up layout
         v_layout = QVBoxLayout()
-        self.setLayout(v_layout)
 
         label1 = QLabel("<h2>New Bill</h2>")
         v_layout.addWidget(label1, alignment=Qt.AlignCenter)
@@ -339,28 +362,35 @@ class NewQueryWidget(QWidget):
         v_layout.addWidget(label2, alignment=Qt.AlignCenter)
 
         buttons = QDialogButtonBox()
-        bill_by_client_button = QPushButton("Bill by Client")
-        bill_by_day_button = QPushButton("Bill by Day")
 
-        bill_by_day_button.clicked.connect(self.init_bill_by_day)
+        bill_by_client_button = QPushButton("Bill by Client")
         bill_by_client_button.clicked.connect(self.init_bill_by_client)
+
+        bill_by_day_button = QPushButton("Bill by Day")
+        bill_by_day_button.clicked.connect(self.init_bill_by_day)
 
         buttons.addButton(bill_by_client_button, 0)
         buttons.addButton(bill_by_day_button, 0)
 
         v_layout.addWidget(buttons, alignment=Qt.AlignCenter)
 
+        self.setLayout(v_layout)
+        # Layout finished
+
     def init_bill_by_day(self):
+        """Open a DayQueryPopup and get the day to be billed."""
 
         day_query = DayQueryPopup(parent=self)
         day_query.exec_()
-        # Implement logic of throwing info back up to main scene?
 
     def bill_by_day(self, date):
+        """Ask the main scene to bill the given day."""
         assert type(date) == datetime
         return self.parent().parent().new_bill_by_day(date)
 
     def init_bill_by_client(self):
+        """Open a ClientQueryPopup and get the client to be billed."""
+        # TODO: Implement
         pass
 
 class BillableConfirmationPopup(QDialog):
@@ -402,11 +432,12 @@ class BillableConfirmationPopup(QDialog):
         self.close()
 
 class DayQueryPopup(QDialog):
-    """docstring for DayQueryPopup."""
+    """The popup for choosing a day to bill."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Set up layout
         layout = QVBoxLayout()
 
         label1 = QLabel("<p>Please choose the day you'd like to bill for:</p>")
@@ -425,8 +456,14 @@ class DayQueryPopup(QDialog):
         layout.addWidget(hidden_loader_with_confirm_button, alignment=Qt.AlignCenter)
 
         self.setLayout(layout)
+        # Layout finished
 
     def confirm_date(self):
+        """
+        A function that confirms the selected date
+        and begins downloading calendar data.
+        """
+
         # Handle the login in a worker QThread
         date = self.date_picker.date()
         self.date = datetime(date.year(), date.month(), date.day())
@@ -436,27 +473,28 @@ class DayQueryPopup(QDialog):
         on_close_fn = self.finished
 
 
-        self.login_thread = ThreadedTask(target_fn, args, on_close_fn)
-        self.login_thread.update.connect(self.gui_fn)
+        self.login_thread = ThreadedTask(target_fn, args, on_close_fn, self.gui_fn)
         self.login_thread.start()
 
     def bill_by_day_target_fn(self, date):
-        # Tell the NewQueryWindow to bill one day
+        """Tell the NewQueryWindow to bill one day"""
         self.events_of_day = self.parent().bill_by_day(date)
         return True
 
     def finished(self):
+        """Stop the loading gif before closing."""
         self.loader.stop_loading()
         self.close()
 
-    def set_events(self, events_of_day):
-        self.events_of_day = events_of_day
-
     def gui_fn(self):
-        self.parent().parent().parent().new_display_query_by_day_widget(self.date.strftime("%m/%d/%Y"), self.events_of_day)
+        """Tell the main scene to make a DisplayQueryByDayWidget based on the events_of_day data."""
+        self.parent().parent().parent().new_display_query_by_day_widget(
+                                            self.date.strftime("%m/%d/%Y"),
+                                            self.events_of_day
+                                            )
 
 class HiddenLoaderStackedWidget(QStackedWidget):
-    """docstring for HiddenLoaderStackedWidget."""
+    """A QStackedWidget that always contains a loading .gif underneath."""
 
     def __init__(self, widget_on_top, parent=None, size=None):
         super().__init__(parent)
@@ -483,7 +521,7 @@ class HiddenLoaderStackedWidget(QStackedWidget):
         self.setCurrentWidget(self.widget_on_top)
 
 class ThreadedTask(QObject):
-    """docstring for ThreadedTask."""
+    """A signle class for singular threaded tasks."""
     finished = pyqtSignal()
     update = pyqtSignal()
 
@@ -504,9 +542,13 @@ class ThreadedTask(QObject):
         self.finished.connect(self.thread.quit)
         self.finished.connect(self.deleteLater)
 
+        if self.gui_fn:
+            self.update.connect(self.gui_fn)
+
     def run(self):
         # Do what you came to do
         if self.target_fn(*self.args):
+            # Id the target_fn ever returns yes,
             self.update.emit()
         self.finished.emit()
 
@@ -514,7 +556,7 @@ class ThreadedTask(QObject):
         self.thread.start()
 
 class DisplayQueryWidget(QWidget):
-    """docstring for DisplayQueryWindow."""
+    """A generic scene to display a finished iCloud query"""
 
     def __init__(self, name=None, events=None, data=None, parent=None):
         super().__init__(parent)
@@ -523,12 +565,13 @@ class DisplayQueryWidget(QWidget):
         self.data = data
         self.header = None
 
+        # Get page number
         self.page_num = None
         if self.parent():
             self.page_num = len(self.parent().navigable_pages)
 
+        # Set up layout
         self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
 
         self.title = QLabel("<h2>Bill: {}</h2>".format(self.name))
         self.layout.addWidget(self.title, alignment=Qt.AlignCenter)
@@ -543,15 +586,20 @@ class DisplayQueryWidget(QWidget):
         self.export_as_csv_btn.clicked.connect(self.export_as_csv)
         self.layout.addWidget(self.export_as_csv_btn, alignment=Qt.AlignCenter)
 
+        self.setLayout(self.layout)
+        # Layout finished
+
     def get_name(self):
         return self.name
 
     def rename(self, new_name):
+        """Rename this page to new_name."""
         self.name = new_name
         self.title.setText("<h2>Bill: {}</h2>".format(self.name))
         self.parent().parent().rename_page_in_toolbar(self.page_num, self.name)
 
     def export_as_csv(self):
+        """Export the information contained in the checked elements of this page to a .csv"""
         filename = "BillingReport: " + self.name.replace("/","-") + "({})".format(datetime.today().strftime("%m.%d.%Y"))
         fieldnames = self.header[1:]
         checked_rows = []
@@ -566,10 +614,12 @@ class DisplayQueryWidget(QWidget):
         download_csv_file(filename, fieldnames, checked_rows)
 
 class DisplayQueryByDayWidget(DisplayQueryWidget):
-    """docstring for DisplayQueryByDayWidget."""
+    """A scene to display a finished iCloud query of a particular day."""
 
     def __init__(self, name=None, events=None, data=None, parent=None):
         super().__init__(name, events, data, parent)
+
+        # Set up table
         self.header = ["Billable?","Event","CPT","Insurance","Payment","Billing Fee"]
         self.table.setColumnCount(len(self.header))
         self.table.setHorizontalHeaderLabels(self.header)
@@ -580,7 +630,7 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         self.table.resizeColumnsToContents()
 
     def add_to_table(self, i, event):
-        # Add the given event to row i
+        """Add the given event to row i"""
         checkbox_item = QWidget()
         checkbox = QCheckBox()
         c_layout = QHBoxLayout(checkbox_item)
@@ -614,6 +664,7 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         self.table.setItem(i, 5, fee)
         fee.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
-    def checkbox_toggled(self, i, new_state):
-        # TODO: Implement
+    def checkbox_toggled(self, new_state, i):
+        # TODO: Implement [2 is on, 0 is off]
+
         pass

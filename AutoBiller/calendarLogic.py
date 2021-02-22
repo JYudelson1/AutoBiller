@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 
 class DateRange(object):
-    """docstring for DateRange."""
+    """A wrapper for a tuple of DateTime objects."""
 
     def __init__(self, start, end):
         super(DateRange, self).__init__()
@@ -32,14 +32,14 @@ class DateRange(object):
         return self.events[-1]
 
     def contains(self, day):
-        # Is the specified day within this date range?
+        """Is the specified day within this date range?"""
         assert type(day) == datetime
         if (day >= self.start and day <= self.end):
             return True
         return False
 
     def all_events_within(self, sub_dr):
-        # returns a sorted list of all events within both self and sub_dr
+        """Returns a sorted list of all events within both self and sub_dr"""
         assert type(sub_dr) == DateRange
         events_within_timeframe = []
         for event in self.events:
@@ -52,7 +52,7 @@ class DateRange(object):
         return "({}, {})".format(self.start.strftime("%m/%d/%Y"), self.end.strftime("%m/%d/%Y"))
 
 class CalendarManager(object):
-    """docstring for CalendarManager."""
+    """An object to manage the calendar information, seperate from iCloud."""
 
     TIME_DELTA = 7
 
@@ -65,13 +65,14 @@ class CalendarManager(object):
         return self.parent.icloud
 
     def download_date_range(self, date_range):
+        """Download calendar data within the specified date range"""
         cal = self.icloud().calendar
         cal.refresh_client(from_dt=date_range.start,to_dt=date_range.end)
 
         return [CalendarEvent(event) for event in cal.response['Event']]
 
     def add_one_day(self, date):
-        # Pre-download TIME_DELTA days in advance
+        """Pre-download TIME_DELTA days in advance"""
         date_and_extra = DateRange(date, date + timedelta(days=self.TIME_DELTA))
         events = self.add_date_range(date_and_extra)
         events_of_day = [e for e in events if e.day == date]
@@ -158,18 +159,15 @@ class CalendarManager(object):
         return dr_focus.all_events_within(date_range)
 
     def merge_dr(self, dr_delete, dr_merge):
-        # merge the data from dr_delete to dr_merge
+        """Merge the data from dr_delete to dr_merge"""
         dr_merge.add_events(dr_delete.get_events())
 
     def extend_dr_forwards(self, dr_extend, new_end):
         assert new_end >= dr_extend.end
         dr_extend.set_end(new_end)
 
-    def extend_dr_backwards(self, dr_extend, new_start):
-        assert new_start <= dr_extend.start
-        dr_extend.set_start(new_start)
-
     def download_to_dr(self, relevant_dr, download_dr):
+        """Download events that took place within download_dr, then move to relevant_dr"""
         events = self.download_date_range(download_dr)
 
         # Ensure the new events are being added to the right place
@@ -188,7 +186,7 @@ class CalendarManager(object):
         return readable
 
 class CalendarEvent(object):
-    """docstring for CalendarEvent."""
+    """A wrapper for an event."""
 
     def __init__(self, calendar_dict):
         super(CalendarEvent, self).__init__()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 class Client(object):
-    """docstring for Client."""
+    """A wrapper for a client."""
 
     def __init__(self, name, insurance="", copay=None, diagnosis=None):
         super().__init__()
@@ -26,7 +26,7 @@ class Client(object):
         self.relevant_calendar_events_by_billability[event] = billability
 
 class ClientDirectory(object):
-    """docstring for ClientDirectory."""
+    """An object that stores a list of Clients."""
 
     def __init__(self):
         super().__init__()
