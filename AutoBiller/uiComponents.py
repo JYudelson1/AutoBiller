@@ -7,9 +7,9 @@ from PyQt5.QtGui import QIcon, QMovie, QPixmap, QPalette, QColor
 from pyicloud import PyiCloudService
 from time import sleep
 
-from clientLogic import *
-from calendarLogic import *
-from utils import *
+from AutoBiller.clientLogic import *
+from AutoBiller.calendarLogic import *
+from AutoBiller.utils import *
 # TODO: change to AutoBiller.* for distribution
 
 class MainScene(QMainWindow):

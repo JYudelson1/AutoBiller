@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from uiComponents import *
-from clientLogic import *
-from calendarLogic import *
-from utils import *
+from AutoBiller.uiComponents import *
+from AutoBiller.clientLogic import *
+from AutoBiller.calendarLogic import *
+from AutoBiller.utils import *
 
 # TODO: change to AutoBiller.* for distribution
 
