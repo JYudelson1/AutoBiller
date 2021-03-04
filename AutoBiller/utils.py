@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import csv, os, json
+import csv, os, json, sys
+
+# Set path to relative if running from within the bundle
+def abs_path(relative_path):
+    if getattr(sys, 'frozen', False): 
+        return os.path.join(os.path.dirname(sys.executable), relative_path)
+    else:
+        return relative_path
 
 def get_download_path():
     """Returns the default downloads path for linux or windows"""
@@ -38,7 +45,7 @@ def download_csv_file(filename, fieldnames, list_of_rows):
 #     "90839": $$$  #Crisis
 # }
 
-with open("resources/fees.json", "r") as f:
+with open(abs_path("resources/fees.json"), "r") as f:
     fee_by_cpt_code = json.load(f)
 
 def write_fees(new_fees):

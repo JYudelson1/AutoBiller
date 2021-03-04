@@ -7,9 +7,9 @@ from PyQt5.QtGui import QIcon, QMovie, QPixmap, QPalette, QColor
 from pyicloud import PyiCloudService
 from time import sleep
 
-from AutoBiller.clientLogic import *
-from AutoBiller.calendarLogic import *
-from AutoBiller.utils import *
+from clientLogic import *
+from calendarLogic import *
+from utils import *
 # TODO: change to AutoBiller.* for distribution
 
 class MainScene(QMainWindow):
@@ -22,7 +22,7 @@ class MainScene(QMainWindow):
         self._createToolBar()
         self._createStatusBar()
 
-        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowIcon(QIcon('resources/icon.png'))
         self.setMinimumSize(500, 300)
         self.setWindowTitle("AutoBiller")
 
