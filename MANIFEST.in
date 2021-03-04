@@ -1,0 +1,3 @@
+include AutoBiller/resources/*.png
+include AutoBiller/resources/*.gif
+include AutoBiller/resources/*.json
