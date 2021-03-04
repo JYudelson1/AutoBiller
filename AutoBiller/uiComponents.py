@@ -34,7 +34,7 @@ class MainScene(QMainWindow):
         self.navigable_pages = [nq]
 
         # Init the QStackedWidget that will hold the various scenes (except for login)
-        self.stacked_widget = QStackedWidget(self)
+        self.stacked_widget = QStackedWidget(parent=self)
         self.stacked_widget.addWidget(nq)
 
 
@@ -92,6 +92,8 @@ class MainScene(QMainWindow):
         self.stacked_widget.setCurrentWidget(page)
         # Return Status Bar to default
         self.status.showMessage("Developed by Joseph Yudelson")
+        # Resize window
+        self.resize(QSize(500, 300))
 
     def go_to_main(self):
         """Sets the QStackedWidget as the central widget"""
@@ -257,6 +259,7 @@ class LoginConfirmationPopup(QDialog):
                                                                         form.itemAt(1).widget().text()
                                                                         )
                                             )
+        confirmation_button.setDefault(True)
         self.layout().addWidget(confirmation_button, alignment=Qt.AlignCenter)
 
 
@@ -390,7 +393,7 @@ class NewQueryWidget(QWidget):
 
     def init_bill_by_client(self):
         """Open a ClientQueryPopup and get the client to be billed."""
-        # TODO: Implement
+        # TODO: Implement bill by client
         pass
 
 class BillableConfirmationPopup(QDialog):
@@ -564,6 +567,7 @@ class DisplayQueryWidget(QWidget):
         self.events = events
         self.data = data
         self.header = None
+        self.types_in_order = ["90791", "96152", "90832", "90834", "90837", "90853", "90847", "90839"]
 
         # Get page number
         self.page_num = None
@@ -605,7 +609,11 @@ class DisplayQueryWidget(QWidget):
             if checked == Qt.Checked:
                 row_dict = {}
                 for j, field in enumerate(fieldnames):
-                    row_dict[field] = self.table.item(i, j+1).text()
+                    widget = self.table.cellWidget(i,j+1)
+                    if widget:
+                        row_dict[field] = widget.findChild(QComboBox).currentText()
+                    else:
+                        row_dict[field] = self.table.item(i, j+1).text()
                 checked_rows.append(row_dict)
         self.parent().parent().status.showMessage("File Saved to Downloads!")
         download_csv_file(filename, fieldnames, checked_rows)
@@ -617,17 +625,27 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         super().__init__(name, events, data, parent)
 
         # Set up table
-        self.header = ["Billable?","Event","CPT","Insurance","Payment","Billing Fee"]
+        self.header = ["Billable?","Event / Client","CPT","Insurance","Payment","Billing Fee"]
         self.table.setColumnCount(len(self.header))
         self.table.setHorizontalHeaderLabels(self.header)
+        self.is_event_billable = self.parent().client_directory.is_event_billable
+        self.client_by_row = {}
 
         for i, event in enumerate(self.events):
+            # Add the evnts to the table, then check if they are events.
             self.add_to_table(i, event)
 
+            session_data = self.is_event_billable(event)
+            if session_data:
+                self.table.cellWidget(i, 0).findChild(QCheckBox).setCheckState(2)
+                self.set_row_info(i, **session_data)
+
         self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
+        self.parent().resize(self.table.sizeHint() + QSize(100, 190))
 
     def add_to_table(self, i, event):
-        """Add the given event to row i"""
+        """Add the given non-session event to row i"""
         checkbox_item = QWidget()
         checkbox = QCheckBox()
         c_layout = QHBoxLayout(checkbox_item)
@@ -638,11 +656,13 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
 
         title = QTableWidgetItem(event.title)
         title.setTextAlignment(Qt.AlignCenter)
+        self.table.removeCellWidget(i, 1)
         self.table.setItem(i, 1, title)
         title.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
         cpt = QTableWidgetItem("---")
         cpt.setTextAlignment(Qt.AlignCenter)
+        self.table.removeCellWidget(i, 2)
         self.table.setItem(i, 2, cpt)
         cpt.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
@@ -661,7 +681,79 @@ class DisplayQueryByDayWidget(DisplayQueryWidget):
         self.table.setItem(i, 5, fee)
         fee.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
-    def checkbox_toggled(self, new_state, i):
-        # TODO: Implement [2 is on, 0 is off]
+    def set_row_info(self, row, name, cpt="", insurance="", fee=""):
+        """Set the information at a given row to the new session info"""
+        name_box = self.table.cellWidget(row, 1).findChild(QComboBox)
+        name_box.addItem(name)
+        name_box.setCurrentIndex(name_box.count() - 1)
+        if cpt:
+            # Set the cpt to the appropriate value
+            index = self.types_in_order.index(cpt)
+            self.table.cellWidget(row, 2).findChild(QComboBox).setCurrentIndex(index)
+        self.table.item(row, 3).setText(insurance)
 
-        pass
+
+    def checkbox_toggled(self, new_state, i):
+        """
+        Activates when the check mark at row i is toggled.
+        A new_state of 2 means the mark is checked, 0 for unchecked.
+        This transforms the event row into the editable version if checked, or vice versa.
+
+        RETURNS: none
+        """
+        if new_state: # The checkbox was toggled on
+
+            title = QWidget()
+            title_dropdown = QComboBox()
+            d_layout = QHBoxLayout(title)
+            d_layout.addWidget(title_dropdown, alignment=Qt.AlignCenter)
+            title.setLayout(d_layout)
+            self.table.setCellWidget(i, 1, title)
+
+            title_dropdown.setEditable(True)
+            title_dropdown.setInsertPolicy(QComboBox.InsertAtBottom)
+            title_dropdown.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+
+
+            title_dropdown.addItem("Group")
+            title_dropdown.insertSeparator(1)
+
+            title_dropdown.setCurrentIndex(-1)
+            title_dropdown.setCurrentText("Client")
+            # TODO: implement defaults from the ClientDirectory
+            #title_dropdown.currentTextChanged.connect() # TODO
+
+            cpt = QWidget()
+            cpt_dropdown = QComboBox()
+            d_layout = QHBoxLayout(cpt)
+            d_layout.addWidget(cpt_dropdown, alignment=Qt.AlignCenter)
+            cpt.setLayout(d_layout)
+            self.table.setCellWidget(i, 2, cpt)
+
+            cpt_dropdown.addItem("90791")
+            cpt_dropdown.addItem("96152")
+            cpt_dropdown.addItem("90832")
+            cpt_dropdown.addItem("90834")
+            cpt_dropdown.addItem("90837")
+            cpt_dropdown.addItem("90853")
+            cpt_dropdown.addItem("90847")
+            cpt_dropdown.addItem("90839")
+
+            # When the cpt code is changed, change the corresponding fee
+            cpt_dropdown.currentIndexChanged.connect(lambda index: self.table.item(i, 5).setText(str(fee_by_cpt_code[self.types_in_order[index]])))
+            cpt_dropdown.setCurrentIndex(3)
+            self.table.item(i, 5).setText(str(fee_by_cpt_code[self.types_in_order[3]]))
+
+            # Allow user to edit insurance & Payment
+            self.table.item(i, 3).setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            self.table.item(i, 4).setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable)
+            self.table.item(i, 3).setText("")
+            self.table.item(i, 4).setText("")
+
+        else: # The checkbox was toggled off
+            self.add_to_table(i, self.events[i])
+
+        # Resize table and window:
+        self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
+        self.parent().parent().resize(self.table.sizeHint() + QSize(100, 190))

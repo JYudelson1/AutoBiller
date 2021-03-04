@@ -3,13 +3,12 @@
 class Client(object):
     """A wrapper for a client."""
 
-    def __init__(self, name, insurance="", copay=None, diagnosis=None):
+    def __init__(self, name, insurance="", copay=None):
         super().__init__()
         self.name = name
         self.billable_names = [name]
         self.insurance = insurance
         self.copay = copay
-        self.diagnosis = diagnosis
 
         self.relevant_calendar_events_by_billability = {}
 
@@ -35,3 +34,20 @@ class ClientDirectory(object):
     def add_client(self, name):
         client = Client(name)
         self.clients.append(client)
+
+    def is_event_billable(self, event):
+        """
+
+
+        RETURNS: If the event is not billable for any client, returns None
+                 Else, returns a dict in the form:
+                 {
+                    client = Client,
+                    name = str,
+                    cpt = str or None,
+                    insurance = str or None,
+                    fee = str (iff cpt) or None
+                 }
+        """
+        # TODO: Implement event checking
+        return None
