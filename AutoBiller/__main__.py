@@ -27,11 +27,11 @@ def main():
     main_scene.setCentralWidget(login_widget)
     main_scene.show()
 
-    # main_scene.go_to_main()
-    # main_scene.toolbar.show()
-    # a = CalendarEvent({"title":"test", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
-    # b = CalendarEvent({"title":"test2", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
-    # d = main_scene.new_display_query_by_day_widget("TEST", [a,b])
+    main_scene.go_to_main()
+    main_scene.toolbar.show()
+    a = CalendarEvent({"title":"test", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
+    b = CalendarEvent({"title":"test2", "duration":45, "localStartDate":[0, 2021, 2, 3, 12, 0]})
+    d = main_scene.new_display_query_by_day_widget("TEST", [a,b])
 
     autobiller.exec_()
 

@@ -128,7 +128,7 @@ class MainScene(QMainWindow):
         self.navigable_pages.append(finished_query_widget)
         self.stacked_widget.addWidget(finished_query_widget)
 
-        title = finished_query_widget.get_name()
+        title = finished_query_widget.name
         self.toolbar.addAction(title, lambda: self.nav(index))
 
     def change_fees(self):
@@ -588,9 +588,6 @@ class DisplayQueryWidget(QWidget):
 
         self.setLayout(self.layout)
         # Layout finished
-
-    def get_name(self):
-        return self.name
 
     def rename(self, new_name):
         """Rename this page to new_name."""
