@@ -22,7 +22,7 @@ class MainScene(QMainWindow):
         self._createToolBar()
         self._createStatusBar()
 
-        self.setWindowIcon(QIcon('resources/icon.png'))
+        self.setWindowIcon(QIcon('icon.png'))
         self.setMinimumSize(500, 300)
         self.setWindowTitle("AutoBiller")
 
